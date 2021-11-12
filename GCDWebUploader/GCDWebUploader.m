@@ -46,6 +46,7 @@
 #import "GCDWebServerDataResponse.h"
 #import "GCDWebServerErrorResponse.h"
 #import "GCDWebServerFileResponse.h"
+#import <SSZipArchive/SSZipArchive.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -273,7 +274,22 @@ NS_ASSUME_NONNULL_END
     return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_NotFound message:@"\"%@\" does not exist", relativePath];
   }
   if (isDirectory) {
-    return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_BadRequest message:@"\"%@\" is a directory", relativePath];
+      
+      /* baolei change: support download a directory
+       */
+      NSString *dirName = @"HeartRate";
+      NSString *rootDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+      NSString *fullDir = [rootDir stringByAppendingPathComponent:dirName];
+      
+      NSString *cachesPath = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
+      NSString *zipFilePath = [cachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.zip",dirName]];
+      
+      BOOL flag = [SSZipArchive createZipFileAtPath:zipFilePath withContentsOfDirectory:fullDir];
+      if (flag) {
+          return [GCDWebServerFileResponse responseWithFile:zipFilePath isAttachment:YES];
+      }
+      
+    return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_BadRequest message:@"\"%@\" zip fail", relativePath];
   }
 
   NSString* fileName = [absolutePath lastPathComponent];

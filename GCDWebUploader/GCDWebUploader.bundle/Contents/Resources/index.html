@@ -156,6 +156,13 @@
             <p>{%=formatFileSize(o.size)%}</p>
           {% } %}
         </td>
+        {% if (o.size == null) { %}
+        <td class="column-move">
+          <button type="button" class="btn btn-default btn-xs button-download">
+            <span class="glyphicon glyphicon-download-alt"></span>
+          </button>
+        </td>
+        {% } %}
         <td class="column-move">
           <button type="button" class="btn btn-default btn-xs button-move">
             <span class="glyphicon glyphicon glyphicon-share-alt"></span>
